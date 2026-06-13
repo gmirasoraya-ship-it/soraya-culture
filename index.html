@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soraya — Culture Générale</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Georgia', serif; background: #0f0f13; color: #e8e4dc; min-height: 100vh; padding: 24px; }
+h1 { font-size: 1.5rem; font-weight: normal; letter-spacing: 0.05em; color: #c9b99a; margin-bottom: 4px; }
+.subtitle { font-size: 0.8rem; color: #6b6560; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 28px; }
+
+.tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+.tab { padding: 7px 16px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; border: 1px solid #2a2a35; background: #1a1a22; color: #6b6560; font-family: 'Georgia', serif; transition: all 0.2s; }
+.tab.active { background: #2a2535; border-color: #7b6fa0; color: #c9b8e8; }
+.tab:hover:not(.active) { border-color: #3a3a48; color: #a09890; }
+
+.page { display: none; }
+.page.active { display: block; }
+
+.card { background: #1a1a22; border: 1px solid #2a2a35; border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+.card-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: #6b6560; margin-bottom: 14px; }
+
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+.stat-value { font-size: 2.2rem; font-weight: bold; color: #e8e4dc; line-height: 1; }
+.stat-label { font-size: 0.75rem; color: #6b6560; margin-top: 4px; }
+.stat-delta { font-size: 0.72rem; color: #7eb89a; margin-top: 6px; }
+
+.week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.day-col { text-align: center; }
+.day-label { font-size: 0.62rem; color: #6b6560; text-transform: uppercase; margin-bottom: 6px; }
+.day-dot { width: 32px; height: 32px; border-radius: 8px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; cursor: pointer; transition: transform 0.15s; border: 1px solid #2a2a35; }
+.day-dot:hover { transform: scale(1.1); }
+.day-dot.done { background: #2d4a38; border-color: #3d6a4a; }
+.day-dot.today { background: #2a2535; border-color: #7b6fa0; }
+.day-dot.empty { background: #1a1a22; }
+.day-domain { font-size: 0.55rem; color: #6b6560; margin-top: 4px; line-height: 1.3; }
+
+.domain-list { display: flex; flex-direction: column; gap: 10px; }
+.domain-row { display: flex; flex-direction: column; gap: 4px; }
+.domain-header { display: flex; justify-content: space-between; align-items: center; }
+.domain-name { font-size: 0.78rem; color: #c9b99a; display: flex; align-items: center; gap: 6px; }
+.domain-pct { font-size: 0.72rem; color: #6b6560; }
+.bar-bg { height: 5px; background: #2a2a35; border-radius: 99px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+
+.mini-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.cal-header { font-size: 0.55rem; color: #6b6560; text-align: center; text-transform: uppercase; padding-bottom: 4px; }
+.cal-day { aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; }
+.cal-day.done { background: #2d4a38; color: #7eb89a; }
+.cal-day.today { background: #2a2535; color: #b8a8d0; font-weight: bold; }
+.cal-day.empty { background: #1a1a22; color: #3a3a45; }
+.cal-day.future { color: #2a2a35; }
+
+.streak-display { display: flex; align-items: baseline; gap: 6px; margin-top: 6px; }
+.flame { font-size: 1.4rem; }
+
+.book-card { display: flex; gap: 12px; align-items: flex-start; }
+.book-cover { width: 44px; height: 62px; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+.book-info { flex: 1; }
+.book-title { font-size: 0.85rem; color: #e8e4dc; margin-bottom: 2px; }
+.book-author { font-size: 0.7rem; color: #6b6560; margin-bottom: 10px; }
+.progress-label { font-size: 0.65rem; color: #6b6560; margin-bottom: 4px; }
+.page-input-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.page-input-row input { width: 50px; background: #14141c; border: 1px solid #2a2a35; border-radius: 6px; padding: 4px 6px; font-size: 0.72rem; color: #e8e4dc; font-family: 'Georgia', serif; outline: none; text-align: center; }
+.page-input-row span { font-size: 0.7rem; color: #6b6560; }
+
+/* RESSOURCES */
+.domain-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.domain-pill { padding: 6px 14px; border-radius: 20px; font-size: 0.72rem; cursor: pointer; border: 1px solid #2a2a35; background: #1a1a22; color: #6b6560; font-family: 'Georgia', serif; transition: all 0.2s; }
+.domain-pill.active { border-color: var(--col); color: var(--col); background: #1e1e28; }
+
+.resource-log { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; margin-bottom: 14px; }
+.resource-item { background: #14141c; border-radius: 10px; padding: 10px 14px; }
+.resource-title { font-size: 0.82rem; color: #e8e4dc; margin-bottom: 4px; }
+.resource-meta { font-size: 0.65rem; color: #6b6560; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 0.58rem; border: 1px solid; }
+.type-Podcast { border-color: #7b6fa0; color: #b8a8d0; }
+.type-YouTube { border-color: #a04040; color: #d08080; }
+.type-Livre { border-color: #4a7a4a; color: #7eb89a; }
+.type-Article { border-color: #4a6a9b; color: #80a0d0; }
+.type-Film { border-color: #9b7a4a; color: #c9a060; }
+.type-Autre { border-color: #6b6560; color: #a09890; }
+
+.add-form { display: grid; gap: 8px; }
+.add-form-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 8px; align-items: center; }
+.fi { background: #14141c; border: 1px solid #2a2a35; border-radius: 8px; padding: 8px 10px; font-size: 0.75rem; color: #e8e4dc; font-family: 'Georgia', serif; outline: none; width: 100%; }
+.fi:focus { border-color: #7b6fa0; }
+select.fi { color: #a09890; }
+.fi-note { resize: vertical; min-height: 52px; }
+
+.btn { background: #2a2535; border: 1px solid #3d3060; border-radius: 8px; color: #b8a8d0; font-size: 0.75rem; padding: 8px 14px; cursor: pointer; font-family: 'Georgia', serif; white-space: nowrap; transition: background 0.2s; }
+.btn:hover { background: #352a45; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-sm { padding: 4px 10px; font-size: 0.7rem; border-radius: 6px; }
+.btn-green { background: #1e3028; border-color: #3d6a4a; color: #7eb89a; }
+.btn-green:hover { background: #243830; }
+
+/* NOTES */
+.notes-list { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
+.note-item { background: #14141c; border-left: 3px solid #3d3d50; border-radius: 0 8px 8px 0; padding: 8px 10px; font-size: 0.75rem; color: #a09890; line-height: 1.5; }
+.note-tag { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: #6b6560; margin-bottom: 2px; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; right: 24px; background: #1e3028; border: 1px solid #3d6a4a; color: #7eb89a; padding: 10px 16px; border-radius: 10px; font-size: 0.75rem; font-family: 'Georgia', serif; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; }
+.toast.err { background: #2a1a10; border-color: #5a3020; color: #c08060; }
+.toast.show { opacity: 1; }
+
+/* LOADING */
+.loading { display: inline-block; width: 12px; height: 12px; border: 2px solid #3d3060; border-top-color: #b8a8d0; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 6px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.sep { border: none; border-top: 1px solid #2a2a35; margin: 12px 0; }
+.empty-state { font-size: 0.75rem; color: #6b6560; padding: 16px 0; text-align: center; }
+
+.notion-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.62rem; color: #6b6560; margin-left: 8px; }
+.notion-dot { width: 6px; height: 6px; border-radius: 50%; background: #7eb89a; }
+
+/* DIVERSITY */
+.div-section { margin-top: 14px; }
+.div-domain { margin-bottom: 12px; }
+.div-label { font-size: 0.68rem; color: #6b6560; margin-bottom: 5px; }
+.div-chips { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.div-chip { padding: 2px 9px; border-radius: 99px; font-size: 0.62rem; border: 1px solid; }
+.warn-text { font-size: 0.62rem; color: #c08060; margin-left: 4px; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #1a1a22; }
+::-webkit-scrollbar-thumb { background: #3a3a48; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<h1>🌿 Soraya — Culture Générale</h1>
+<p class="subtitle">Tableau de bord · Juin 2026 <span class="notion-badge"><span class="notion-dot"></span> Synchronisé avec Notion</span></p>
+
+<div class="tabs">
+  <button class="tab active" onclick="showPage('dashboard',this)">🏠 Dashboard</button>
+  <button class="tab" onclick="showPage('ressources',this)">📚 Ressources</button>
+  <button class="tab" onclick="showPage('carnet',this)">📝 Carnet d'idées</button>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">Série en cours</div>
+      <div class="streak-display"><span class="flame">🔥</span><span class="stat-value" id="streakVal">3</span></div>
+      <div class="stat-label">jours consécutifs</div>
+      <div class="stat-delta">↑ Continue comme ça !</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Ressources consultées</div>
+      <div class="stat-value" id="resCountStat">—</div>
+      <div class="stat-label">au total</div>
+      <div class="stat-delta" style="color:#c9b99a;">✦ Objectif : 60 en 3 mois</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Idées capturées</div>
+      <div class="stat-value" id="ideaCountStat">—</div>
+      <div class="stat-label">dans le carnet</div>
+      <div class="stat-delta" style="color:#c9b99a;">✦ Objectif : 60 en 3 mois</div>
+    </div>
+  </div>
+
+  <div class="grid-2-1">
+    <div class="card">
+      <div class="card-title">Cette semaine</div>
+      <div class="week-grid" id="weekGrid"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Lecture en cours</div>
+      <div class="book-card">
+        <div class="book-cover" style="background:#1e2e1e;">📗</div>
+        <div class="book-info">
+          <div class="book-title">Sapiens</div>
+          <div class="book-author">Yuval Noah Harari</div>
+          <div class="progress-label">Page <span id="currentPage">42</span> / 512</div>
+          <div class="bar-bg"><div class="bar-fill" id="bookBar" style="width:8%;background:#7eb89a;"></div></div>
+          <div class="page-input-row">
+            <input type="number" id="pageInput" placeholder="42" min="0" max="512">
+            <span>/ 512</span>
+            <button class="btn btn-sm" onclick="updatePage()">Màj</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2-1">
+    <div class="card">
+      <div class="card-title">Progression par domaine</div>
+      <div class="domain-list" id="domainList"><div class="empty-state"><span class="loading"></span> Chargement...</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Juin 2026</div>
+      <div class="mini-cal" id="miniCal"></div>
+    </div>
+  </div>
+</div>
+
+<!-- RESSOURCES -->
+<div class="page" id="page-ressources">
+  <div class="card">
+    <div class="card-title">Filtre par domaine</div>
+    <div class="domain-selector" id="domainSelector"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Journal — <span id="activeDomainLabel">Tous les domaines</span></div>
+    <div class="resource-log" id="resourceLog"><div class="empty-state"><span class="loading"></span> Chargement depuis Notion...</div></div>
+    <hr class="sep">
+    <div style="font-size:0.68rem;color:#6b6560;margin-bottom:10px;">✦ Ajouter une ressource — sauvegardée dans Notion</div>
+    <div class="add-form">
+      <div class="add-form-row">
+        <input type="text" class="fi" id="resTitle" placeholder="Titre de la ressource...">
+        <select class="fi" id="resDomain" style="width:160px;"></select>
+        <select class="fi" id="resType" style="width:120px;">
+          <option value="Podcast">🎙️ Podcast</option>
+          <option value="YouTube">📺 YouTube</option>
+          <option value="Livre">📖 Livre</option>
+          <option value="Article">📰 Article</option>
+          <option value="Film">🎬 Film</option>
+          <option value="Autre">✦ Autre</option>
+        </select>
+        <button class="btn btn-green" id="btnAddRes" onclick="addResource()">+ Notion</button>
+      </div>
+      <input type="text" class="fi" id="resNote" placeholder="Ce que tu en retiens (optionnel)...">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Diversité des formats par domaine</div>
+    <div id="diversityView"><div class="empty-state"><span class="loading"></span></div></div>
+  </div>
+</div>
+
+<!-- CARNET -->
+<div class="page" id="page-carnet">
+  <div class="card">
+    <div class="card-title">📝 Carnet d'idées (<span id="ideaCountLabel">—</span>) — sauvegardé dans Notion</div>
+    <div class="notes-list" id="notesList"><div class="empty-state"><span class="loading"></span> Chargement depuis Notion...</div></div>
+    <hr class="sep">
+    <div class="add-form" style="gap:8px;">
+      <input type="text" class="fi" id="noteText" placeholder="Une idée, une question, une connexion inattendue...">
+      <div style="display:flex;gap:8px;">
+        <select class="fi" id="noteDomain" style="flex:1;"></select>
+        <select class="fi" id="noteType" style="width:130px;">
+          <option value="Idée">💡 Idée</option>
+          <option value="Question">❓ Question</option>
+          <option value="Connexion">🔗 Connexion</option>
+          <option value="Citation">💬 Citation</option>
+        </select>
+        <button class="btn btn-green" id="btnAddNote" onclick="addNote()">+ Notion</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DOMAINS = [
+  { id: 'Histoire',           emoji: '🏛️', color: '#c08050' },
+  { id: 'Philosophie',        emoji: '🔭', color: '#7b6fa0' },
+  { id: 'Économie & Géopo',   emoji: '🌍', color: '#4a7a9b' },
+  { id: 'Psychologie',        emoji: '🧠', color: '#7eb89a' },
+  { id: 'Art & Cinéma',       emoji: '🎭', color: '#c9a060' },
+  { id: 'Business & Finances',emoji: '💡', color: '#a06080' },
+];
+const WEEK_DOMAINS = ['Histoire','Philosophie','Économie & Géopo','Psychologie','Art & Cinéma','Business & Finances','Libre'];
+const TYPES = ['Podcast','YouTube','Livre','Article','Film','Autre'];
+const TYPE_EMOJI = { Podcast:'🎙️', YouTube:'📺', Livre:'📖', Article:'📰', Film:'🎬', Autre:'✦' };
+
+// Notion DB IDs
+const DB_RESSOURCES = '42cae4b7-d81d-450a-a7cd-1ef0d8454453';
+const DB_CARNET     = '5dd7421c-71b6-4f81-a122-b06233d06814';
+
+let resources = [];
+let notes = [];
+let activeDomainFilter = 'all';
+const weekState = [true, true, false, false, false, false, false];
+const TODAY_IDX = 2;
+
+// ── TOAST ──
+function toast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (err?' err':'') + ' show';
+  setTimeout(() => t.className = 'toast' + (err?' err':''), 2500);
+}
+
+// ── CLAUDE API → Notion ──
+async function callClaude(prompt) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1000,
+      mcp_servers: [{ type: 'url', url: 'https://mcp.notion.com/mcp', name: 'notion' }],
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  const data = await res.json();
+  // Extract text from all text blocks
+  return data.content?.filter(b => b.type === 'text').map(b => b.text).join('\n') || '';
+}
+
+// ── LOAD RESOURCES FROM NOTION ──
+async function loadResources() {
+  try {
+    const reply = await callClaude(
+      `Query the Notion database with data_source_id "${DB_RESSOURCES}". ` +
+      `Return ONLY a JSON array (no markdown) of objects with fields: titre, domaine, type, date, note. ` +
+      `Get the last 50 entries sorted by date descending. ` +
+      `If the database is empty return [].`
+    );
+    const clean = reply.replace(/```json|```/g, '').trim();
+    const arr = JSON.parse(clean.match(/\[[\s\S]*\]/)?.[0] || '[]');
+    resources = arr.map(r => ({
+      title: r.titre || r.Titre || '',
+      domain: r.domaine || r.Domaine || '',
+      type: r.type || r.Type || 'Autre',
+      date: r.date || r.Date || '',
+      note: r.note || r['Note personnelle'] || ''
+    }));
+  } catch(e) {
+    resources = [];
+  }
+  updateDashboardStats();
+  buildDomainList();
+  buildCal();
+  buildResourceLog();
+  buildDiversity();
+}
+
+// ── LOAD NOTES FROM NOTION ──
+async function loadNotes() {
+  try {
+    const reply = await callClaude(
+      `Query the Notion database with data_source_id "${DB_CARNET}". ` +
+      `Return ONLY a JSON array (no markdown) of objects with fields: idee, domaine, type, date. ` +
+      `Get the last 50 entries sorted by date descending. ` +
+      `If the database is empty return [].`
+    );
+    const clean = reply.replace(/```json|```/g, '').trim();
+    const arr = JSON.parse(clean.match(/\[[\s\S]*\]/)?.[0] || '[]');
+    notes = arr.map(n => ({
+      text: n.idee || n.Idée || '',
+      domain: n.domaine || n.Domaine || '',
+      type: n.type || n.Type || 'Idée',
+      date: n.date || ''
+    }));
+  } catch(e) {
+    notes = [];
+  }
+  buildNotesList();
+  updateDashboardStats();
+}
+
+// ── ADD RESOURCE → NOTION ──
+async function addResource() {
+  const title = document.getElementById('resTitle').value.trim();
+  const domain = document.getElementById('resDomain').value;
+  const type = document.getElementById('resType').value;
+  const note = document.getElementById('resNote').value.trim();
+  if (!title || !domain) { toast('Remplis le titre et le domaine !', true); return; }
+
+  const btn = document.getElementById('btnAddRes');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span>';
+
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    await callClaude(
+      `Create a new page in the Notion database with data_source_id "${DB_RESSOURCES}" with these properties: ` +
+      `Titre: "${title}", Domaine: "${domain}", Type: "${type}", date:Date:start: "${today}", date:Date:is_datetime: 0` +
+      (note ? `, "Note personnelle": "${note}"` : '') +
+      `. Confirm with OK.`
+    );
+    document.getElementById('resTitle').value = '';
+    document.getElementById('resNote').value = '';
+    toast('✓ Sauvegardé dans Notion !');
+    await loadResources();
+  } catch(e) {
+    toast('Erreur de sauvegarde', true);
+  }
+  btn.disabled = false;
+  btn.textContent = '+ Notion';
+}
+
+// ── ADD NOTE → NOTION ──
+async function addNote() {
+  const text = document.getElementById('noteText').value.trim();
+  const domain = document.getElementById('noteDomain').value;
+  const type = document.getElementById('noteType').value;
+  if (!text) { toast('Écris une idée !', true); return; }
+
+  const btn = document.getElementById('btnAddNote');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span>';
+
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    await callClaude(
+      `Create a new page in the Notion database with data_source_id "${DB_CARNET}" with these properties: ` +
+      `Idée: "${text}", Domaine: "${domain}", Type: "${type}", date:Date:start: "${today}", date:Date:is_datetime: 0. ` +
+      `Confirm with OK.`
+    );
+    document.getElementById('noteText').value = '';
+    toast('✓ Idée sauvegardée dans Notion !');
+    await loadNotes();
+  } catch(e) {
+    toast('Erreur de sauvegarde', true);
+  }
+  btn.disabled = false;
+  btn.textContent = '+ Notion';
+}
+
+// ── UI BUILDERS ──
+function showPage(id, tab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  tab.classList.add('active');
+}
+
+function updateDashboardStats() {
+  document.getElementById('resCountStat').textContent = resources.length;
+  document.getElementById('ideaCountStat').textContent = notes.length;
+  document.getElementById('ideaCountLabel').textContent = notes.length;
+}
+
+function buildWeek() {
+  const DAYS = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  const grid = document.getElementById('weekGrid'); grid.innerHTML = '';
+  DAYS.forEach((d, i) => {
+    const col = document.createElement('div'); col.className = 'day-col';
+    col.innerHTML = `<div class="day-label">${d}</div>`;
+    const dot = document.createElement('div');
+    dot.className = 'day-dot '+(weekState[i]?'done':i===TODAY_IDX?'today':'empty');
+    dot.textContent = weekState[i]?'✓':i===TODAY_IDX?'●':'';
+    dot.onclick = () => { if(i===TODAY_IDX&&!weekState[i]){weekState[i]=true;buildWeek();} };
+    const dl = document.createElement('div'); dl.className='day-domain';
+    dl.textContent = DOMAINS[i]?DOMAINS[i].emoji:'—';
+    col.appendChild(dot); col.appendChild(dl);
+    grid.appendChild(col);
+  });
+}
+
+function buildDomainList() {
+  const list = document.getElementById('domainList'); list.innerHTML = '';
+  DOMAINS.forEach(d => {
+    const res = resources.filter(r => r.domain === d.id);
+    const types = [...new Set(res.map(r => r.type))].length;
+    const pct = Math.min(100, res.length * 12 + types * 8);
+    const row = document.createElement('div'); row.className = 'domain-row';
+    row.innerHTML = `
+      <div class="domain-header">
+        <span class="domain-name">${d.emoji} ${d.id}</span>
+        <span class="domain-pct">${pct}%</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${d.color};"></div></div>`;
+    list.appendChild(row);
+  });
+}
+
+function buildCal() {
+  const cal = document.getElementById('miniCal'); cal.innerHTML = '';
+  ['L','M','M','J','V','S','D'].forEach(h => {
+    const d = document.createElement('div'); d.className='cal-header'; d.textContent=h; cal.appendChild(d);
+  });
+  const doneDays = resources.map(r => r.date ? new Date(r.date).getDate() : null).filter(Boolean);
+  for(let i=1;i<=30;i++){
+    const d = document.createElement('div');
+    d.className='cal-day '+(doneDays.includes(i)?'done':i===13?'today':i>13?'future':'empty');
+    d.textContent=i; cal.appendChild(d);
+  }
+}
+
+function buildDomainSelector() {
+  const sel = document.getElementById('domainSelector'); sel.innerHTML='';
+  const all = document.createElement('button');
+  all.className='domain-pill'+(activeDomainFilter==='all'?' active':'');
+  all.style.setProperty('--col','#c9b99a');
+  all.textContent='🌐 Tous';
+  all.onclick=()=>{activeDomainFilter='all';buildDomainSelector();buildResourceLog();buildDiversity();};
+  sel.appendChild(all);
+  DOMAINS.forEach(d=>{
+    const pill=document.createElement('button');
+    pill.className='domain-pill'+(activeDomainFilter===d.id?' active':'');
+    pill.style.setProperty('--col',d.color);
+    pill.textContent=d.emoji+' '+d.id.split(' ')[0];
+    pill.onclick=()=>{activeDomainFilter=d.id;buildDomainSelector();buildResourceLog();buildDiversity();};
+    sel.appendChild(pill);
+  });
+  // populate selects
+  ['resDomain','noteDomain'].forEach(id=>{
+    const s=document.getElementById(id); if(!s)return;
+    s.innerHTML='<option value="">Domaine...</option>';
+    DOMAINS.forEach(d=>{const o=document.createElement('option');o.value=d.id;o.textContent=d.emoji+' '+d.id;s.appendChild(o);});
+  });
+}
+
+function buildResourceLog() {
+  const log = document.getElementById('resourceLog'); log.innerHTML='';
+  document.getElementById('activeDomainLabel').textContent =
+    activeDomainFilter==='all'?'Tous les domaines': DOMAINS.find(d=>d.id===activeDomainFilter)?.id||'';
+  const filtered = activeDomainFilter==='all'?resources:resources.filter(r=>r.domain===activeDomainFilter);
+  if(!filtered.length){log.innerHTML='<div class="empty-state">Aucune ressource ici. Ajoute ta première !</div>';return;}
+  filtered.forEach(r=>{
+    const dom=DOMAINS.find(d=>d.id===r.domain);
+    const item=document.createElement('div'); item.className='resource-item';
+    item.innerHTML=`
+      <div class="resource-title">${r.title}</div>
+      <div class="resource-meta">
+        <span class="badge type-${r.type}">${TYPE_EMOJI[r.type]||'✦'} ${r.type}</span>
+        ${dom?`<span style="color:${dom.color}">${dom.emoji} ${dom.id}</span>`:''}
+        ${r.date?`<span>${r.date}</span>`:''}
+        ${r.note?`<span style="color:#8a8480;font-style:italic;">"${r.note}"</span>`:''}
+      </div>`;
+    log.appendChild(item);
+  });
+}
+
+function buildDiversity() {
+  const view=document.getElementById('diversityView'); view.innerHTML='';
+  let hasAny=false;
+  DOMAINS.forEach(d=>{
+    const res=resources.filter(r=>r.domain===d.id);
+    if(!res.length)return;
+    hasAny=true;
+    const typeCounts={};
+    res.forEach(r=>{typeCounts[r.type]=(typeCounts[r.type]||0)+1;});
+    const div=document.createElement('div'); div.className='div-domain';
+    const chips=TYPES.filter(t=>typeCounts[t]).map(t=>
+      `<span class="div-chip type-${t}">${TYPE_EMOJI[t]} ${t} ×${typeCounts[t]}</span>`
+    ).join('');
+    const warn=Object.keys(typeCounts).length===1&&res.length>=2?
+      `<span class="warn-text">⚠️ Varie les formats !</span>`:'';
+    div.innerHTML=`<div class="div-label">${d.emoji} ${d.id}</div><div class="div-chips">${chips}${warn}</div>`;
+    view.appendChild(div);
+  });
+  if(!hasAny) view.innerHTML='<div class="empty-state">Ajoute des ressources pour voir ta diversité.</div>';
+}
+
+function buildNotesList() {
+  const list=document.getElementById('notesList'); list.innerHTML='';
+  if(!notes.length){list.innerHTML='<div class="empty-state">Aucune idée capturée pour l\'instant.</div>';return;}
+  notes.forEach(n=>{
+    const dom=DOMAINS.find(d=>d.id===n.domain);
+    const item=document.createElement('div'); item.className='note-item';
+    if(dom) item.style.borderLeftColor=dom.color;
+    item.innerHTML=`<div class="note-tag" style="color:${dom?.color||'#6b6560'}">${dom?.emoji||''} ${n.type||'Idée'} · ${dom?.id||n.domain}</div>${n.text}`;
+    list.appendChild(item);
+  });
+  document.getElementById('ideaCountLabel').textContent=notes.length;
+}
+
+function updatePage() {
+  const val=parseInt(document.getElementById('pageInput').value);
+  if(isNaN(val)||val<0||val>512)return;
+  document.getElementById('currentPage').textContent=val;
+  document.getElementById('bookBar').style.width=Math.round((val/512)*100)+'%';
+  document.getElementById('pageInput').value='';
+}
+
+document.getElementById('noteText')?.addEventListener('keydown',e=>{if(e.key==='Enter')addNote();});
+document.getElementById('resTitle')?.addEventListener('keydown',e=>{if(e.key==='Enter')addResource();});
+
+// ── INIT ──
+buildWeek();
+buildDomainSelector();
+loadResources();
+loadNotes();
+</script>
+</body>
+</html>
