@@ -443,7 +443,7 @@ function buildWeek() {
     const dot = document.createElement('div');
     dot.className = 'day-dot '+(weekState[i]?'done':i===TODAY_IDX?'today':'empty');
     dot.textContent = weekState[i]?'✓':i===TODAY_IDX?'●':'';
-    dot.onclick = () => { if(i===TODAY_IDX&&!weekState[i]){weekState[i]=true;buildWeek();} };
+    dot.onclick = () => { weekState[i]=!weekState[i]; buildWeek(); };
     const dl = document.createElement('div'); dl.className='day-domain';
     dl.textContent = DOMAINS[i]?DOMAINS[i].emoji:'—';
     col.appendChild(dot); col.appendChild(dl);
